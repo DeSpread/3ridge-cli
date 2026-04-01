@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "3ridge": {
+      "command": "node",
+      "args": ["/Users/cryptogang/develop/git/3ridge-cli/dist/bin/3ridge-mcp.js"]
+    }
+  }
+}
