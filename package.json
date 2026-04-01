@@ -1,9 +1,10 @@
 {
   "name": "@despread/3ridge-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent-native CLI for 3ridge campaign data — read-only access to campaigns, leaderboards, rewards, and more",
   "type": "module",
   "bin": {
+    "3ridge-cli": "./dist/bin/3ridge.js",
     "3ridge": "./dist/bin/3ridge.js",
     "3ridge-mcp": "./dist/bin/3ridge-mcp.js"
   },
