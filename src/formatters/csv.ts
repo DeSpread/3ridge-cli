@@ -10,7 +10,11 @@ export function formatCsv(data: unknown): string {
   const keys = [...new Set(items.flatMap((item) => Object.keys(item)))];
 
   const escapeField = (val: unknown): string => {
-    const str = val === null || val === undefined ? "" : String(val);
+    let str = val === null || val === undefined ? "" : String(val);
+    // Prevent CSV formula injection (Excel/Sheets treat leading =, +, -, @ as formulas)
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = `'${str}`;
+    }
     if (str.includes(",") || str.includes('"') || str.includes("\n")) {
       return `"${str.replace(/"/g, '""')}"`;
     }

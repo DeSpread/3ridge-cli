@@ -20,7 +20,7 @@ export function registerParticipantCommands(program: Command): void {
         const creds = loadCredentials()!;
 
         const csvText = await trigeRest<string>(
-          `/event/${eventId}/participants.csv`,
+          `/event/${encodeURIComponent(eventId)}/participants.csv`,
           { apiUrl, accessToken: creds.accessToken },
         );
 

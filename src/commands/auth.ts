@@ -8,23 +8,53 @@ import { handleError } from "../utils/errors.js";
 
 const DEFAULT_API_URL = "https://api.3ridge.io/graphql";
 
+async function readPassword(prompt: string): Promise<string> {
+  // Disable echo for password input
+  if (process.stdin.isTTY) {
+    process.stdout.write(prompt);
+    const rl = createInterface({ input: stdin, terminal: false });
+    return new Promise((resolve) => {
+      let pw = "";
+      process.stdin.setRawMode(true);
+      process.stdin.resume();
+      process.stdin.on("data", (chunk: Buffer) => {
+        const ch = chunk.toString();
+        if (ch === "\n" || ch === "\r") {
+          process.stdin.setRawMode(false);
+          process.stdin.pause();
+          process.stdout.write("\n");
+          rl.close();
+          resolve(pw);
+        } else if (ch === "\u007F" || ch === "\b") {
+          pw = pw.slice(0, -1);
+        } else {
+          pw += ch;
+        }
+      });
+    });
+  }
+  const rl = createInterface({ input: stdin, output: stdout });
+  const pw = await rl.question(prompt);
+  rl.close();
+  return pw;
+}
+
 export function registerAuthCommands(program: Command): void {
   program
     .command("login")
     .description("Authenticate with 3ridge API")
     .option("-e, --email <email>", "email address")
-    .option("-p, --password <password>", "password")
     .action(async (opts, cmd) => {
       try {
         const { apiUrl } = getGlobalOptions(cmd);
-        let { email, password } = opts;
+        let { email } = opts;
 
-        if (!email || !password) {
+        if (!email) {
           const rl = createInterface({ input: stdin, output: stdout });
-          if (!email) email = await rl.question("Email: ");
-          if (!password) password = await rl.question("Password: ");
+          email = await rl.question("Email: ");
           rl.close();
         }
+        const password = await readPassword("Password: ");
 
         const result = await login(
           email,

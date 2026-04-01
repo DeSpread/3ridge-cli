@@ -27,7 +27,7 @@ export function registerLeaderboardCommands(program: Command): void {
     .action(async (id, _, cmd) => {
       try {
         const { format } = getGlobalOptions(cmd);
-        const data = await mashboardRest(`/storyteller-leaderboard/${id}`);
+        const data = await mashboardRest(`/storyteller-leaderboard/${encodeURIComponent(id)}`);
         output(data, format);
       } catch (err) {
         handleError(err);
@@ -42,7 +42,7 @@ export function registerLeaderboardCommands(program: Command): void {
       try {
         const { format } = getGlobalOptions(cmd);
         const data = await mashboardRest<{ scores?: unknown[]; [key: string]: unknown }>(
-          `/storyteller-leaderboard/${id}/timeseries-group`,
+          `/storyteller-leaderboard/${encodeURIComponent(id)}/timeseries-group`,
         );
 
         // Apply limit if scores array exists
