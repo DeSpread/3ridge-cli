@@ -1,0 +1,43 @@
+{
+  "name": "@3ridge/cli",
+  "version": "0.1.0",
+  "description": "Agent-native CLI for 3ridge campaign data — read-only access to campaigns, leaderboards, rewards, and more",
+  "type": "module",
+  "bin": {
+    "3ridge": "./dist/bin/3ridge.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/bin/3ridge.js"
+  },
+  "keywords": [
+    "3ridge",
+    "cli",
+    "web3",
+    "campaign",
+    "agent-native",
+    "mcp"
+  ],
+  "author": "DeSpread",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
