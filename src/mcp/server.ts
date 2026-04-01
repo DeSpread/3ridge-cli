@@ -9,14 +9,13 @@ import {
   PROJECTS_QUERY,
   PROJECT_QUERY,
   QUESTS_QUERY,
-  ADMIN_USERS_QUERY,
 } from "../queries/index.js";
-import type { Event, Project, Quest, AdminUser } from "../clients/types.js";
+import type { Event, Project, Quest } from "../clients/types.js";
 
 export function startMcpServer(): void {
   const server = new McpServer({
     name: "3ridge",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   // --- Tool: list_campaigns ---
@@ -149,19 +148,6 @@ export function startMcpServer(): void {
       };
 
       return { content: [{ type: "text" as const, text: JSON.stringify(summary, null, 2) }] };
-    },
-  );
-
-  // --- Tool: export_participants ---
-  server.tool(
-    "export_participants",
-    "Export campaign participants as CSV data. Requires admin authentication via TRIDGE_API_KEY env var.",
-    { campaign_id: z.string().describe("Campaign (event) ID") },
-    async ({ campaign_id }) => {
-      const csvText = await trigeRest<string>(
-        `/event/${encodeURIComponent(campaign_id)}/participants.csv`,
-      );
-      return { content: [{ type: "text" as const, text: csvText }] };
     },
   );
 

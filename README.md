@@ -8,10 +8,10 @@ Includes an **MCP Server** for AI agent integration (Claude, Codex, etc.).
 
 ```bash
 # Run without installing
-npx 3ridge-cli campaigns list
+npx -p @despread/3ridge-cli 3ridge campaigns list
 
 # Or install globally
-npm install -g 3ridge-cli
+npm install -g @despread/3ridge-cli
 3ridge campaigns list
 ```
 
@@ -33,7 +33,7 @@ npm install -g 3ridge-cli
 
 ## Commands
 
-### Public (no auth required)
+All commands are public and require no authentication.
 
 | Command | Description |
 |---------|-------------|
@@ -51,19 +51,6 @@ npm install -g 3ridge-cli
 | `3ridge mindshare community` | Community mindshare data |
 | `3ridge mindshare keywords` | Trending keywords |
 | `3ridge oracle summary` | Market data (kimchi premium, stocks) |
-
-### Authenticated
-
-| Command | Description |
-|---------|-------------|
-| `3ridge login -e <email>` | Login (password prompt, hidden input) |
-| `3ridge logout` | Clear credentials |
-| `3ridge whoami` | Current auth status |
-| `3ridge me` | My profile |
-| `3ridge my completions [--event <id>]` | My completed quests |
-| `3ridge my events` | My participated events |
-| `3ridge participants export <id>` | Export participants CSV (admin) |
-| `3ridge admin users` | List admin users (admin) |
 
 ## Output Formats
 
@@ -100,7 +87,7 @@ Add to `.mcp.json` in your project or `~/.claude/` directory:
   "mcpServers": {
     "3ridge": {
       "command": "npx",
-      "args": ["3ridge-cli", "--mcp"]
+      "args": ["-p", "@despread/3ridge-cli", "3ridge-mcp"]
     }
   }
 }
@@ -119,7 +106,7 @@ Or with a local install:
 }
 ```
 
-### Available MCP Tools (14)
+### Available MCP Tools (13)
 
 | Tool | Description |
 |------|-------------|
@@ -130,7 +117,6 @@ Or with a local install:
 | `get_project` | Project details |
 | `list_quests` | Quests for a campaign |
 | `get_rewards_summary` | Reward breakdown |
-| `export_participants` | Participants CSV (admin) |
 | `get_leaderboard_list` | All leaderboards |
 | `get_leaderboard_top` | Top leaderboard entries |
 | `get_mindshare` | Community mindshare |
@@ -152,12 +138,11 @@ Agent: [calls list_campaigns] -> [calls get_campaign_stats x3] -> comparison tab
 
 ## Security
 
+- Public endpoints only: no user data, no admin operations
 - Read-only: no write/update/delete operations
-- Password input: hidden (no shell history exposure)
-- Credentials: `~/.3ridge/credentials.json` (0600 permissions)
-- CSV export: formula injection prevention
+- CSV output: formula injection prevention
 - URL params: encoded to prevent injection
-- Codex-verified: security audit score 7/10, all findings addressed
+- Codex-verified: security audit passed
 
 ## License
 

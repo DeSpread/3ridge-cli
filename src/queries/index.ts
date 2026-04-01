@@ -1,5 +1,5 @@
-// All GraphQL queries — read-only operations ONLY.
-// Mutations are isolated in src/auth/login.ts (loginByEmail + token refresh only).
+// All GraphQL queries — public read-only operations ONLY.
+// No mutations. No auth-required queries.
 
 export const EVENTS_QUERY = `
   query events($isVisible: Boolean) {
@@ -92,73 +92,6 @@ export const QUESTS_QUERY = `
       ... on VisitWebQuest { createdAt updatedAt targetUrl }
       ... on BasicQuest { createdAt updatedAt }
       ... on VooiTelegramQuest { createdAt updatedAt }
-    }
-  }
-`;
-
-export const ME_QUERY = `
-  query me {
-    me {
-      _id
-      emailCredential { email }
-      wallets { chainType walletAddress }
-      socials { ... on Discord { type userInfo { username global_name } } ... on Telegram { type userInfo { id username } } ... on Twitter { type id name } }
-      profileImage
-      point
-      roles
-      privyId
-    }
-  }
-`;
-
-export const COMPLETED_QUESTS_QUERY = `
-  query completedQuests($eventId: String) {
-    completedQuests(eventId: $eventId) {
-      user
-      event
-      completedQuestIds
-      isCompletedEvent
-    }
-  }
-`;
-
-export const PARTICIPATED_EVENTS_QUERY = `
-  query participatedEvents {
-    participatedEvents {
-      participatedEvents {
-        _id title beginDate untilDate questCounts
-        reward { type point }
-        project { name }
-      }
-      completedEvents {
-        _id title
-      }
-      participatedEventsCounts
-      completedEventsCounts
-    }
-  }
-`;
-
-export const ADMIN_USERS_QUERY = `
-  query adminUsers {
-    adminUsers {
-      _id
-      name
-      username
-      roles
-      privyId
-      slackId
-    }
-  }
-`;
-
-export const SHORT_LINKS_QUERY = `
-  query shortLinks {
-    shortLinks {
-      _id
-      src
-      target
-      queryString
     }
   }
 `;
