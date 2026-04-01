@@ -1,0 +1,245 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+import { createGraphQLClient } from "../clients/graphql.js";
+import { mashboardRest, trigeRest } from "../clients/rest.js";
+import {
+  EVENTS_QUERY,
+  EVENT_QUERY,
+  PROJECTS_QUERY,
+  PROJECT_QUERY,
+  QUESTS_QUERY,
+  ADMIN_USERS_QUERY,
+} from "../queries/index.js";
+import type { Event, Project, Quest, AdminUser } from "../clients/types.js";
+
+export function startMcpServer(): void {
+  const server = new McpServer({
+    name: "3ridge",
+    version: "0.1.0",
+  });
+
+  // --- Tool: list_campaigns ---
+  server.tool(
+    "list_campaigns",
+    "List 3ridge campaigns (events). Returns campaign ID, title, project, quest count, participant count, dates.",
+    { visible_only: z.boolean().optional().describe("Only return visible campaigns") },
+    async ({ visible_only }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ events: Event[] }>(EVENTS_QUERY, {
+        isVisible: visible_only ? true : undefined,
+      });
+
+      const campaigns = data.events.map((e) => ({
+        id: e._id,
+        title: e.title,
+        project: e.project?.name ?? null,
+        questCount: e.questCounts,
+        participantCount: e.participants.length,
+        visible: e.isVisible,
+        beginDate: e.beginDate,
+        untilDate: e.untilDate,
+      }));
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(campaigns, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_campaign ---
+  server.tool(
+    "get_campaign",
+    "Get detailed information about a specific 3ridge campaign including reward, project, and participants.",
+    { campaign_id: z.string().describe("Campaign (event) ID") },
+    async ({ campaign_id }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ event: Event }>(EVENT_QUERY, { _id: campaign_id });
+      return { content: [{ type: "text" as const, text: JSON.stringify(data.event, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_campaign_stats ---
+  server.tool(
+    "get_campaign_stats",
+    "Get aggregated statistics for a campaign: participant count, quest count, reward summary, duration.",
+    { campaign_id: z.string().describe("Campaign (event) ID") },
+    async ({ campaign_id }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ event: Event }>(EVENT_QUERY, { _id: campaign_id });
+      const e = data.event;
+
+      const stats = {
+        id: e._id,
+        title: e.title,
+        project: e.project?.name ?? null,
+        participantCount: e.participants.length,
+        questCount: e.questCounts,
+        rewardType: e.reward?.type ?? "NONE",
+        rewardPoint: e.reward?.point ?? 0,
+        prizeCount: e.reward?.prizes.length ?? 0,
+        durationDays: Math.ceil(
+          (new Date(e.untilDate).getTime() - new Date(e.beginDate).getTime()) / (1000 * 60 * 60 * 24),
+        ),
+        beginDate: e.beginDate,
+        untilDate: e.untilDate,
+      };
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(stats, null, 2) }] };
+    },
+  );
+
+  // --- Tool: list_projects ---
+  server.tool(
+    "list_projects",
+    "List all 3ridge partner projects with their social links.",
+    {},
+    async () => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ projects: Project[] }>(PROJECTS_QUERY);
+      return { content: [{ type: "text" as const, text: JSON.stringify(data.projects, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_project ---
+  server.tool(
+    "get_project",
+    "Get details for a specific 3ridge partner project.",
+    { project_id: z.string().describe("Project ID") },
+    async ({ project_id }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ project: Project }>(PROJECT_QUERY, { _id: project_id });
+      return { content: [{ type: "text" as const, text: JSON.stringify(data.project, null, 2) }] };
+    },
+  );
+
+  // --- Tool: list_quests ---
+  server.tool(
+    "list_quests",
+    "List all quests for a campaign. Shows quest type, display text, and type-specific details.",
+    { campaign_id: z.string().describe("Campaign (event) ID") },
+    async ({ campaign_id }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ quests: Quest[] }>(QUESTS_QUERY, { eventId: campaign_id });
+      return { content: [{ type: "text" as const, text: JSON.stringify(data.quests, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_rewards_summary ---
+  server.tool(
+    "get_rewards_summary",
+    "Get reward details for a campaign: reward type, points, prizes, and winner limits.",
+    { campaign_id: z.string().describe("Campaign (event) ID") },
+    async ({ campaign_id }) => {
+      const client = createGraphQLClient();
+      const data = await client.request<{ event: Event }>(EVENT_QUERY, { _id: campaign_id });
+      const e = data.event;
+
+      if (!e.reward) {
+        return { content: [{ type: "text" as const, text: "No reward configured for this campaign" }] };
+      }
+
+      const summary = {
+        campaignId: e._id,
+        campaignTitle: e.title,
+        rewardType: e.reward.type,
+        description: e.reward.description,
+        point: e.reward.point,
+        prizes: e.reward.prizes,
+        totalPrizes: e.reward.prizes.length,
+        participantCount: e.participants.length,
+      };
+
+      return { content: [{ type: "text" as const, text: JSON.stringify(summary, null, 2) }] };
+    },
+  );
+
+  // --- Tool: export_participants ---
+  server.tool(
+    "export_participants",
+    "Export campaign participants as CSV data. Requires admin authentication via TRIDGE_API_KEY env var.",
+    { campaign_id: z.string().describe("Campaign (event) ID") },
+    async ({ campaign_id }) => {
+      const csvText = await trigeRest<string>(
+        `/event/${encodeURIComponent(campaign_id)}/participants.csv`,
+      );
+      return { content: [{ type: "text" as const, text: csvText }] };
+    },
+  );
+
+  // --- Tool: get_leaderboard_list ---
+  server.tool(
+    "get_leaderboard_list",
+    "List all storyteller leaderboards.",
+    {},
+    async () => {
+      const data = await mashboardRest("/storyteller-leaderboard");
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_leaderboard_top ---
+  server.tool(
+    "get_leaderboard_top",
+    "Get top participants from a storyteller leaderboard with scores and timeseries data.",
+    {
+      leaderboard_id: z.string().describe("Leaderboard ID"),
+      limit: z.number().optional().default(100).describe("Number of top entries to return"),
+    },
+    async ({ leaderboard_id, limit }) => {
+      const data = await mashboardRest<{ scores?: unknown[]; [key: string]: unknown }>(
+        `/storyteller-leaderboard/${encodeURIComponent(leaderboard_id)}/timeseries-group`,
+      );
+      if (Array.isArray(data.scores)) {
+        data.scores = data.scores.slice(0, limit);
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_mindshare ---
+  server.tool(
+    "get_mindshare",
+    "Get community mindshare data from Telegram tracking.",
+    {},
+    async () => {
+      const data = await mashboardRest("/telegram/mindshare/community");
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_trending_keywords ---
+  server.tool(
+    "get_trending_keywords",
+    "Get trending keyword mentions and narrative tracking data.",
+    {},
+    async () => {
+      const data = await mashboardRest("/telegram/tracking-keywords/mentions/top-series");
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // --- Tool: get_oracle_summary ---
+  server.tool(
+    "get_oracle_summary",
+    "Get market data oracle summary: kimchi premium, stock indices, real estate data.",
+    {},
+    async () => {
+      const data = await mashboardRest("/oracle/summary");
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // --- Tool: check_health ---
+  server.tool(
+    "check_health",
+    "Check 3ridge API and database health status.",
+    {},
+    async () => {
+      const data = await trigeRest("/health");
+      return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    },
+  );
+
+  // Start server on stdio
+  const transport = new StdioServerTransport();
+  server.connect(transport);
+}

@@ -4,7 +4,8 @@
   "description": "Agent-native CLI for 3ridge campaign data — read-only access to campaigns, leaderboards, rewards, and more",
   "type": "module",
   "bin": {
-    "3ridge": "./dist/bin/3ridge.js"
+    "3ridge": "./dist/bin/3ridge.js",
+    "3ridge-mcp": "./dist/bin/3ridge-mcp.js"
   },
   "files": [
     "dist"
@@ -13,7 +14,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/bin/3ridge.js"
+    "start": "node dist/bin/3ridge.js",
+    "start:mcp": "node dist/bin/3ridge-mcp.js"
   },
   "keywords": [
     "3ridge",
@@ -30,7 +32,9 @@
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "graphql": "^16.9.0",
-    "graphql-request": "^7.1.0"
+    "graphql-request": "^7.1.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
