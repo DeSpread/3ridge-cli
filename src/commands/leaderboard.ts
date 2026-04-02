@@ -37,19 +37,18 @@ export function registerLeaderboardCommands(program: Command): void {
   leaderboard
     .command("top <id>")
     .description("Get top participants from a leaderboard")
-    .option("--limit <n>", "number of top entries", "100")
+    .option("--limit <n>", "number of top entries", "20")
+    .option("--days <n>", "lookback period in days", "30")
     .action(async (id, opts, cmd) => {
       try {
         const { format } = getGlobalOptions(cmd);
-        const data = await mashboardRest<{ scores?: unknown[]; [key: string]: unknown }>(
-          `/storyteller-leaderboard/${encodeURIComponent(id)}/timeseries-group`,
+        const params = new URLSearchParams({
+          limit: opts.limit,
+          lookbacks: opts.days,
+        });
+        const data = await mashboardRest(
+          `/storyteller-leaderboard/${encodeURIComponent(id)}/timeseries-group?${params}`,
         );
-
-        // Apply limit if scores array exists
-        if (Array.isArray(data.scores)) {
-          data.scores = data.scores.slice(0, parseInt(opts.limit, 10));
-        }
-
         output(data, format);
       } catch (err) {
         handleError(err);

@@ -168,15 +168,14 @@ export function startMcpServer(): void {
     "Get top participants from a storyteller leaderboard with scores and timeseries data.",
     {
       leaderboard_id: z.string().describe("Leaderboard ID"),
-      limit: z.number().optional().default(100).describe("Number of top entries to return"),
+      limit: z.number().optional().default(20).describe("Number of top entries to return"),
+      days: z.number().optional().default(30).describe("Lookback period in days (e.g. 7, 30, 90)"),
     },
-    async ({ leaderboard_id, limit }) => {
-      const data = await mashboardRest<{ scores?: unknown[]; [key: string]: unknown }>(
-        `/storyteller-leaderboard/${encodeURIComponent(leaderboard_id)}/timeseries-group`,
+    async ({ leaderboard_id, limit, days }) => {
+      const params = new URLSearchParams({ limit: String(limit), lookbacks: String(days) });
+      const data = await mashboardRest(
+        `/storyteller-leaderboard/${encodeURIComponent(leaderboard_id)}/timeseries-group?${params}`,
       );
-      if (Array.isArray(data.scores)) {
-        data.scores = data.scores.slice(0, limit);
-      }
       return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
     },
   );
@@ -184,10 +183,30 @@ export function startMcpServer(): void {
   // --- Tool: get_mindshare ---
   server.tool(
     "get_mindshare",
-    "Get community mindshare data from Telegram tracking.",
-    {},
-    async () => {
-      const data = await mashboardRest("/telegram/mindshare/community");
+    "Get community mindshare data from Telegram tracking. Supports 1/7/14/30/90 day intervals. Use end_date for custom date range.",
+    {
+      days: z.number().optional().default(30).describe("Interval: 1 (24h), 7, 14, 30, or 90 days"),
+      end_date: z.string().optional().describe("End date (YYYY-MM-DD) for custom range. Omit for latest data."),
+      pretge: z.boolean().optional().describe("Show pre-TGE projects only"),
+      limit: z.number().optional().default(50).describe("Number of projects to return"),
+    },
+    async ({ days, end_date, pretge, limit }) => {
+      const params = new URLSearchParams({
+        intervalDays: String(days),
+        limit: String(limit),
+        offset: "0",
+      });
+      if (pretge) params.set("pretge", "true");
+
+      let path: string;
+      if (end_date) {
+        params.set("endDate", end_date);
+        path = `/telegram/mindshare/community/custom-range?${params}`;
+      } else {
+        path = `/telegram/mindshare/community?${params}`;
+      }
+
+      const data = await mashboardRest(path);
       return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
     },
   );
@@ -196,9 +215,20 @@ export function startMcpServer(): void {
   server.tool(
     "get_trending_keywords",
     "Get trending keyword mentions and narrative tracking data.",
-    {},
-    async () => {
-      const data = await mashboardRest("/telegram/tracking-keywords/mentions/top-series");
+    {
+      days: z.number().optional().default(30).describe("Lookback period in days"),
+      type: z.string().optional().default("narrative").describe("Keyword type: narrative or project"),
+      limit: z.number().optional().default(20).describe("Number of keywords to return"),
+    },
+    async ({ days, type, limit }) => {
+      const params = new URLSearchParams({
+        nDays: String(days),
+        type,
+        limit: String(limit),
+      });
+      const data = await mashboardRest(
+        `/telegram/tracking-keywords/mentions/top-series?${params}`,
+      );
       return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
     },
   );
@@ -206,10 +236,13 @@ export function startMcpServer(): void {
   // --- Tool: get_oracle_summary ---
   server.tool(
     "get_oracle_summary",
-    "Get market data oracle summary: kimchi premium, stock indices, real estate data.",
-    {},
-    async () => {
-      const data = await mashboardRest("/oracle/summary");
+    "Get market data oracle summary: kimchi premium, stock indices, real estate data. Supports ranges: 7d, 30d, 90d, 1y, all.",
+    {
+      range: z.string().optional().default("30d").describe("Date range: 7d, 30d, 90d, 1y, or all"),
+    },
+    async ({ range }) => {
+      const params = new URLSearchParams({ range });
+      const data = await mashboardRest(`/oracle/summary?${params}`);
       return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
     },
   );

@@ -11,10 +11,12 @@ export function registerOracleCommands(program: Command): void {
   oracle
     .command("summary")
     .description("Get market data summary (kimchi premium, stocks, real estate)")
-    .action(async (_, cmd) => {
+    .option("--range <range>", "date range: 7d, 30d, 90d, 1y, all", "30d")
+    .action(async (opts, cmd) => {
       try {
         const { format } = getGlobalOptions(cmd);
-        const data = await mashboardRest("/oracle/summary");
+        const params = new URLSearchParams({ range: opts.range });
+        const data = await mashboardRest(`/oracle/summary?${params}`);
         output(data, format);
       } catch (err) {
         handleError(err);
