@@ -15,7 +15,7 @@ import type { Event, Project, Quest } from "../clients/types.js";
 export function startMcpServer(): void {
   const server = new McpServer({
     name: "3ridge",
-    version: "0.3.0",
+    version: "0.3.1",
     description: `3ridge is a Web3 campaign & reward platform (StoryTeller). This MCP server provides read-only access to:
 - Campaigns: quest-based marketing campaigns with rewards (called "events" internally)
 - Projects: partner blockchain projects running campaigns on 3ridge

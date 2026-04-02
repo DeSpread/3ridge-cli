@@ -16,7 +16,7 @@ export function createProgram(): Command {
     .description(
       "Agent-native CLI for 3ridge campaign data (read-only, public endpoints)",
     )
-    .version("0.3.0")
+    .version("0.3.1")
     .option("--format <type>", "output format: json, csv, table", "json")
     .option("--api-url <url>", "override GraphQL API URL")
     .option("--no-color", "disable colored output")
