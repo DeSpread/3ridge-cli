@@ -15,7 +15,20 @@ import type { Event, Project, Quest } from "../clients/types.js";
 export function startMcpServer(): void {
   const server = new McpServer({
     name: "3ridge",
-    version: "0.2.0",
+    version: "0.3.0",
+    description: `3ridge is a Web3 campaign & reward platform (StoryTeller). This MCP server provides read-only access to:
+- Campaigns: quest-based marketing campaigns with rewards (called "events" internally)
+- Projects: partner blockchain projects running campaigns on 3ridge
+- Quests: tasks participants complete (Twitter follow, Discord join, quiz, survey, etc.)
+- Leaderboards: storyteller community rankings by score
+- Mindshare: Telegram community mention share data (1d~90d, custom date range)
+- Keywords: trending narrative/project keyword tracking
+- Oracle: Korean market data (kimchi premium, stock indices, real estate)
+
+Typical workflow: list_campaigns -> get_campaign_stats/get_rewards_summary for analysis.
+For mindshare analysis: get_mindshare with days parameter (1,7,14,30,90).
+For market context: get_oracle_summary with range (7d,30d,90d,1y,all).
+All data is public. No authentication required.`,
   });
 
   // --- Tool: list_campaigns ---
