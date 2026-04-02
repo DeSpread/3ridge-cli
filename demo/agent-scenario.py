@@ -10,7 +10,7 @@ def cli_call(args):
     return json.loads(result.stdout)
 
 print("=" * 60)
-print("  IR Demo: AI Agent + 3ridge MCP Data")
+print("  AI Agent + 3ridge MCP Data Demo")
 print("=" * 60)
 print()
 print('User: "현재 진행 중인 캠페인 중 참여자가 가장 많은 3개를 비교 분석해줘"')
