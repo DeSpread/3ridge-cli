@@ -131,18 +131,12 @@ User: "3ridge 캠페인 3개의 이번 달 참여자 수 비교해줘"
 Agent: [calls list_campaigns] -> [calls get_campaign_stats x3] -> comparison table
 ```
 
-## API Sources
-
-- **3ridge GraphQL**: `api.3ridge.io/graphql` (campaigns, projects, quests, rewards)
-- **Mashboard REST**: `mashboard-api.despreadlabs.io` (leaderboards, mindshare, oracle)
-
 ## Security
 
 - Public endpoints only: no user data, no admin operations
 - Read-only: no write/update/delete operations
 - CSV output: formula injection prevention
 - URL params: encoded to prevent injection
-- Codex-verified: security audit passed
 
 ## License
 
