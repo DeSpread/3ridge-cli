@@ -1,19 +1,24 @@
 # 3ridge CLI
 
-Agent-native CLI for [3ridge](https://3ridge.io) campaign data. Read-only access to campaigns, leaderboards, rewards, and more.
+[![npm version](https://img.shields.io/npm/v/@despread/3ridge-cli)](https://www.npmjs.com/package/@despread/3ridge-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP Ready](https://img.shields.io/badge/MCP-Ready-blue)](https://modelcontextprotocol.io)
 
-Includes an **MCP Server** for AI agent integration (Claude, Codex, etc.).
+Agent-native CLI for [3ridge](https://3ridge.io) — read-only access to campaigns, leaderboards, rewards, and more. Includes an **MCP Server** for AI agent integration (Claude, Codex, etc.).
 
-## Install
+---
+
+## Installation
 
 ```bash
 # Run without installing
-npx -p @despread/3ridge-cli 3ridge campaigns list
+npx -p @despread/3ridge-cli 3ridge <command>
 
-# Or install globally
+# Install globally
 npm install -g @despread/3ridge-cli
-3ridge campaigns list
 ```
+
+---
 
 ## Quick Start
 
@@ -21,66 +26,99 @@ npm install -g @despread/3ridge-cli
 # Check API health
 3ridge health
 
-# List visible campaigns
+# List active campaigns
 3ridge campaigns list --visible
 
-# Campaign statistics
+# View campaign statistics
 3ridge campaigns stats <campaign-id>
 
-# Leaderboard top participants
+# Get leaderboard top 10
 3ridge leaderboard top <leaderboard-id> --limit 10
+
+# Export campaigns to CSV
+3ridge --format csv campaigns list > campaigns.csv
 ```
+
+---
 
 ## Commands
 
-All commands are public and require no authentication.
+### Campaigns
 
 | Command | Description |
 |---------|-------------|
-| `3ridge health` | API health check |
-| `3ridge campaigns list [--visible]` | List campaigns |
-| `3ridge campaigns get <id>` | Campaign details |
-| `3ridge campaigns stats <id>` | Campaign statistics |
-| `3ridge projects list` | List partner projects |
-| `3ridge projects get <id>` | Project details |
-| `3ridge quests list <campaign-id>` | List quests for a campaign |
-| `3ridge rewards summary <campaign-id>` | Reward details |
-| `3ridge leaderboard list` | List leaderboards |
-| `3ridge leaderboard get <id>` | Leaderboard details |
-| `3ridge leaderboard top <id> [--limit N]` | Top participants |
-| `3ridge mindshare community` | Community mindshare data |
-| `3ridge mindshare keywords` | Trending keywords |
-| `3ridge oracle summary` | Market data (kimchi premium, stocks) |
+| `campaigns list [--visible]` | List all campaigns (optionally filter visible only) |
+| `campaigns get <id>` | Get campaign details |
+| `campaigns stats <id>` | Get aggregated campaign statistics |
+
+### Projects
+
+| Command | Description |
+|---------|-------------|
+| `projects list` | List partner projects |
+| `projects get <id>` | Get project details |
+
+### Quests & Rewards
+
+| Command | Description |
+|---------|-------------|
+| `quests list <campaign-id>` | List quests for a campaign |
+| `rewards summary <campaign-id>` | Get reward breakdown |
+
+### Leaderboard
+
+| Command | Description |
+|---------|-------------|
+| `leaderboard list` | List all leaderboards |
+| `leaderboard get <id>` | Get leaderboard details |
+| `leaderboard top <id> [--limit N]` | Get top participants |
+
+### Mindshare & Oracle
+
+| Command | Description |
+|---------|-------------|
+| `mindshare community` | Community mindshare data |
+| `mindshare keywords` | Trending keywords |
+| `oracle summary` | Market data (kimchi premium, stocks) |
+
+### Utility
+
+| Command | Description |
+|---------|-------------|
+| `health` | API health check |
+
+All commands are **public** and require **no authentication**.
+
+---
 
 ## Output Formats
 
 ```bash
-# JSON (default, agent-friendly)
-3ridge campaigns list
-
-# Table (human-readable)
-3ridge --format table campaigns list
-
-# CSV (spreadsheet export)
-3ridge --format csv campaigns list > campaigns.csv
+3ridge campaigns list                      # JSON (default, agent-friendly)
+3ridge --format table campaigns list       # Table (human-readable)
+3ridge --format csv campaigns list         # CSV (spreadsheet export)
 ```
+
+---
 
 ## Global Options
 
-```
---format <type>   json | csv | table (default: json)
---api-url <url>   Override API URL (e.g., staging)
---no-color        Disable colored output
---verbose         Debug logging
-```
+| Option | Description |
+|--------|-------------|
+| `--format <type>` | `json` \| `csv` \| `table` (default: `json`) |
+| `--api-url <url>` | Override API base URL (e.g., staging) |
+| `--no-color` | Disable colored output |
+| `--verbose` | Enable debug logging |
+
+---
 
 ## MCP Server
 
-For AI agent integration (Claude Code, Codex, etc.):
+Integrate with AI agents (Claude Code, Codex, etc.) via the [Model Context Protocol](https://modelcontextprotocol.io).
 
-### Claude Code Setup
+### Setup for Claude Code
 
-Add to `.mcp.json` in your project or `~/.claude/` directory:
+Add to `.mcp.json` in your project or `~/.claude/`:
 
 ```json
 {
@@ -88,19 +126,6 @@ Add to `.mcp.json` in your project or `~/.claude/` directory:
     "3ridge": {
       "command": "npx",
       "args": ["-p", "@despread/3ridge-cli", "3ridge-mcp"]
-    }
-  }
-}
-```
-
-Or with a local install:
-
-```json
-{
-  "mcpServers": {
-    "3ridge": {
-      "command": "node",
-      "args": ["/path/to/3ridge-cli/dist/bin/3ridge-mcp.js"]
     }
   }
 }
@@ -124,20 +149,38 @@ Or with a local install:
 | `get_oracle_summary` | Market data oracle |
 | `check_health` | API health status |
 
-### Example Agent Interaction
+### Example
 
 ```
 User: "3ridge 캠페인 3개의 이번 달 참여자 수 비교해줘"
-Agent: [calls list_campaigns] -> [calls get_campaign_stats x3] -> comparison table
+Agent: [list_campaigns] → [get_campaign_stats × 3] → comparison table
 ```
+
+---
 
 ## Security
 
-- Public endpoints only: no user data, no admin operations
-- Read-only: no write/update/delete operations
-- CSV output: formula injection prevention
-- URL params: encoded to prevent injection
+- **Public endpoints only** — no user data, no admin operations
+- **Read-only** — no write, update, or delete operations
+- **CSV safety** — formula injection prevention
+- **URL encoding** — parameters sanitized to prevent injection
+
+---
+
+## Contributing
+
+```bash
+git clone https://github.com/DeSpread/3ridge-cli.git
+cd 3ridge-cli
+npm install
+npm run build
+npm run dev -- health   # run locally
+```
+
+PRs and issues welcome. Please open an issue before submitting large changes.
+
+---
 
 ## License
 
-MIT
+MIT © [DeSpread](https://github.com/DeSpread)
