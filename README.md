@@ -1,19 +1,55 @@
 # 3ridge CLI
 
-Agent-native CLI for [3ridge](https://3ridge.io) campaign data. Read-only access to campaigns, leaderboards, rewards, and more.
+[![npm version](https://img.shields.io/npm/v/@despread/3ridge-cli)](https://www.npmjs.com/package/@despread/3ridge-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js >= 18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
 
-Includes an **MCP Server** for AI agent integration (Claude, Codex, etc.).
+> Agent-native CLI for [3ridge](https://3ridge.io) — the Web3 quest & campaign platform.  
+> Query campaigns, leaderboards, rewards, and market data with zero authentication required.  
+> Ships with a built-in **MCP Server** for seamless AI agent integration (Claude, Codex, etc.).
+
+---
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [Commands](#commands)
+  - [Health](#health)
+  - [Campaigns](#campaigns)
+  - [Projects](#projects)
+  - [Quests](#quests)
+  - [Rewards](#rewards)
+  - [Leaderboard](#leaderboard)
+  - [Mindshare](#mindshare)
+  - [Oracle](#oracle)
+- [Output Formats](#output-formats)
+- [Global Options](#global-options)
+- [MCP Server (AI Agent Integration)](#mcp-server-ai-agent-integration)
+- [Security](#security)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Prerequisites
+
+- **Node.js >= 18** ([download](https://nodejs.org/))
+
+---
 
 ## Install
 
 ```bash
-# Run without installing
+# Run without installing (recommended for one-off use)
 npx -p @despread/3ridge-cli 3ridge campaigns list
 
-# Or install globally
+# Install globally
 npm install -g @despread/3ridge-cli
-3ridge campaigns list
 ```
+
+---
 
 ## Quick Start
 
@@ -31,56 +67,101 @@ npm install -g @despread/3ridge-cli
 3ridge leaderboard top <leaderboard-id> --limit 10
 ```
 
+---
+
 ## Commands
 
-All commands are public and require no authentication.
+All commands are **public** and require **no authentication**.
+
+### Health
 
 | Command | Description |
 |---------|-------------|
 | `3ridge health` | API health check |
-| `3ridge campaigns list [--visible]` | List campaigns |
-| `3ridge campaigns get <id>` | Campaign details |
-| `3ridge campaigns stats <id>` | Campaign statistics |
+
+### Campaigns
+
+| Command | Description |
+|---------|-------------|
+| `3ridge campaigns list [--visible]` | List all campaigns (optionally filter to visible only) |
+| `3ridge campaigns get <id>` | Get campaign details |
+| `3ridge campaigns stats <id>` | Get campaign statistics |
+
+### Projects
+
+| Command | Description |
+|---------|-------------|
 | `3ridge projects list` | List partner projects |
-| `3ridge projects get <id>` | Project details |
+| `3ridge projects get <id>` | Get project details |
+
+### Quests
+
+| Command | Description |
+|---------|-------------|
 | `3ridge quests list <campaign-id>` | List quests for a campaign |
-| `3ridge rewards summary <campaign-id>` | Reward details |
-| `3ridge leaderboard list` | List leaderboards |
-| `3ridge leaderboard get <id>` | Leaderboard details |
-| `3ridge leaderboard top <id> [--limit N]` | Top participants |
+
+### Rewards
+
+| Command | Description |
+|---------|-------------|
+| `3ridge rewards summary <campaign-id>` | Get reward breakdown for a campaign |
+
+### Leaderboard
+
+| Command | Description |
+|---------|-------------|
+| `3ridge leaderboard list` | List all leaderboards |
+| `3ridge leaderboard get <id>` | Get leaderboard details |
+| `3ridge leaderboard top <id> [--limit N]` | Top N participants |
+
+### Mindshare
+
+| Command | Description |
+|---------|-------------|
 | `3ridge mindshare community` | Community mindshare data |
 | `3ridge mindshare keywords` | Trending keywords |
-| `3ridge oracle summary` | Market data (kimchi premium, stocks) |
+
+### Oracle
+
+| Command | Description |
+|---------|-------------|
+| `3ridge oracle summary` | Market data (kimchi premium, stocks, etc.) |
+
+---
 
 ## Output Formats
 
 ```bash
-# JSON (default, agent-friendly)
+# JSON — default, agent-friendly
 3ridge campaigns list
 
-# Table (human-readable)
+# Table — human-readable terminal output
 3ridge --format table campaigns list
 
-# CSV (spreadsheet export)
+# CSV — export to spreadsheet
 3ridge --format csv campaigns list > campaigns.csv
 ```
 
+---
+
 ## Global Options
 
-```
---format <type>   json | csv | table (default: json)
---api-url <url>   Override API URL (e.g., staging)
---no-color        Disable colored output
---verbose         Debug logging
-```
+| Option | Values | Description |
+|--------|--------|-------------|
+| `--format <type>` | `json` \| `csv` \| `table` | Output format (default: `json`) |
+| `--api-url <url>` | URL | Override API base URL (e.g., staging) |
+| `--no-color` | — | Disable colored output |
+| `--verbose` | — | Enable debug logging |
 
-## MCP Server
+---
 
-For AI agent integration (Claude Code, Codex, etc.):
+## MCP Server (AI Agent Integration)
 
-### Claude Code Setup
+3ridge CLI ships with an **MCP (Model Context Protocol) server** that exposes all data as tools for AI agents — making it easy to build agents that query 3ridge data conversationally.
 
-Add to `.mcp.json` in your project or `~/.claude/` directory:
+### Setup — Claude Code
+
+Add to `.mcp.json` in your project root or `~/.claude/`:
 
 ```json
 {
@@ -93,18 +174,17 @@ Add to `.mcp.json` in your project or `~/.claude/` directory:
 }
 ```
 
-Or with a local install:
-
-```json
-{
-  "mcpServers": {
-    "3ridge": {
-      "command": "node",
-      "args": ["/path/to/3ridge-cli/dist/bin/3ridge-mcp.js"]
-    }
-  }
-}
-```
+> **With a local install:**
+> ```json
+> {
+>   "mcpServers": {
+>     "3ridge": {
+>       "command": "node",
+>       "args": ["/path/to/3ridge-cli/dist/bin/3ridge-mcp.js"]
+>     }
+>   }
+> }
+> ```
 
 ### Available MCP Tools (13)
 
@@ -127,17 +207,36 @@ Or with a local install:
 ### Example Agent Interaction
 
 ```
-User: "3ridge 캠페인 3개의 이번 달 참여자 수 비교해줘"
-Agent: [calls list_campaigns] -> [calls get_campaign_stats x3] -> comparison table
+User:  "3ridge 캠페인 3개의 이번 달 참여자 수 비교해줘"
+Agent: [list_campaigns] → [get_campaign_stats ×3] → comparison table
 ```
+
+---
 
 ## Security
 
-- Public endpoints only: no user data, no admin operations
-- Read-only: no write/update/delete operations
-- CSV output: formula injection prevention
-- URL params: encoded to prevent injection
+| Area | Detail |
+|------|--------|
+| Endpoints | Public only — no user data, no admin operations |
+| Access | Read-only — no write, update, or delete |
+| CSV output | Formula injection prevention built-in |
+| URL params | Encoded to prevent injection |
+
+---
+
+## Contributing
+
+Contributions are welcome! To get started:
+
+1. Fork the repo and create a feature branch (`git checkout -b feat/my-feature`)
+2. Make your changes and add tests if applicable
+3. Ensure the build passes (`npm run build`)
+4. Open a Pull Request with a clear description
+
+Please follow the existing code style and keep PRs focused in scope.
+
+---
 
 ## License
 
-MIT
+MIT © [DeSpread](https://despread.io)
